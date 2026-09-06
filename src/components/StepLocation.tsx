@@ -8,8 +8,9 @@ import { CensusFormData, SearchGeocodeResponse } from '@/lib/types';
 const DynamicMap = dynamic(() => import('./InteractiveMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[260px] sm:h-[320px] rounded-2xl bg-slate-900 animate-pulse flex items-center justify-center text-slate-500 text-sm">
-      Cargando mapa…
+    <div className="w-full h-[260px] sm:h-[320px] rounded-2xl bg-slate-900/90 border border-slate-800 animate-pulse flex flex-col items-center justify-center text-slate-400 text-sm gap-2">
+      <Loader2 className="w-6 h-6 animate-spin text-brand-400" />
+      <span>Cargando mapa interactivo…</span>
     </div>
   ),
 });
@@ -45,11 +46,11 @@ export const StepLocation: React.FC<StepLocationProps> = ({
       const data = await res.json();
       if (data.success && data.data) {
         updateFormData({
-          latitud:     la,
-          longitud:    lo,
-          direccion:   formData.direccion || data.data.address,
-          distrito:    data.data.distrito,
-          provincia:   data.data.provincia,
+          latitud:      la,
+          longitud:     lo,
+          direccion:    formData.direccion || data.data.address,
+          distrito:     data.data.distrito,
+          provincia:    data.data.provincia,
           departamento: data.data.departamento,
         });
       } else {
@@ -65,7 +66,7 @@ export const StepLocation: React.FC<StepLocationProps> = ({
   /* GPS */
   const handleGps = () => {
     if (!navigator.geolocation) {
-      setErrors({ location: 'Tu navegador no soporta geolocalización.' });
+      setErrors({ location: 'Tu navegador o dispositivo no soporta geolocalización.' });
       return;
     }
     setLoadingGps(true);
@@ -75,11 +76,11 @@ export const StepLocation: React.FC<StepLocationProps> = ({
         setLoadingGps(false);
         reverseGeocode(coords.latitude, coords.longitude);
       },
-      () => {
+      (err) => {
         setLoadingGps(false);
-        setErrors({ location: 'No se pudo obtener el GPS. Busca tu dirección manualmente.' });
+        setErrors({ location: 'No se pudo obtener la posición GPS. Puedes mover el pin en el mapa o buscar tu dirección.' });
       },
-      { enableHighAccuracy: true, timeout: 10000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
   };
 
@@ -94,7 +95,9 @@ export const StepLocation: React.FC<StepLocationProps> = ({
       try {
         const res  = await fetch(`/api/geocode/search?q=${encodeURIComponent(searchQuery)}`);
         const data = await res.json();
-        if (data.success) setSearchResults(data.results);
+        if (data.success) setSearchResults(data.results || []);
+      } catch {
+        setSearchResults([]);
       } finally {
         setSearching(false);
       }
@@ -128,40 +131,41 @@ export const StepLocation: React.FC<StepLocationProps> = ({
   };
 
   const inputClass = (field: string) =>
-    `w-full px-4 py-3 rounded-xl glass-input text-sm ${errors[field] ? 'border-rose-500' : ''}`;
+    `w-full px-3.5 py-3 rounded-xl glass-input ${errors[field] ? 'border-rose-500 ring-1 ring-rose-500/50' : ''}`;
 
   const ErrorMsg = ({ field }: { field: string }) =>
     errors[field] ? (
-      <p className="text-xs text-rose-400 mt-1 flex items-center gap-1">
-        <AlertCircle className="w-3.5 h-3.5 shrink-0" />{errors[field]}
+      <p className="text-xs text-rose-400 mt-1.5 flex items-center gap-1">
+        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+        <span>{errors[field]}</span>
       </p>
     ) : null;
 
   return (
-    <form onSubmit={handleNext} className="space-y-5">
-      <div className="border-b border-slate-800 pb-4">
+    <form onSubmit={handleNext} className="space-y-4 sm:space-y-5">
+      <div className="border-b border-slate-800 pb-3 sm:pb-4">
         <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
           <MapPin className="w-5 h-5 text-amber-400 shrink-0" />
-          Ubicación Geográfica
+          <span>Ubicación Geográfica</span>
         </h2>
         <p className="text-xs text-slate-400 mt-1">
-          Usa el GPS o busca tu dirección para marcarla en el mapa.
+          Usa tu GPS, busca tu calle o arrastra el marcador directamente sobre el mapa.
         </p>
       </div>
 
       {/* GPS & Search row */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
         {/* GPS button */}
         <button
           type="button"
           onClick={handleGps}
           disabled={loadingGps}
-          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-semibold text-sm shadow-lg shadow-brand-500/20 transition disabled:opacity-50 whitespace-nowrap"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-brand-500/20 transition disabled:opacity-50 whitespace-nowrap active:scale-[0.98]"
         >
           {loadingGps
             ? <Loader2 className="w-4 h-4 animate-spin" />
-            : <Navigation className="w-4 h-4 text-amber-300" />}
-          <span>{loadingGps ? 'Buscando GPS…' : 'Usar mi ubicación'}</span>
+            : <Navigation className="w-4 h-4 text-amber-300 shrink-0" />}
+          <span>{loadingGps ? 'Obteniendo GPS…' : 'Usar mi ubicación'}</span>
         </button>
 
         {/* Search input */}
@@ -173,7 +177,7 @@ export const StepLocation: React.FC<StepLocationProps> = ({
             placeholder="Buscar dirección o calle…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 rounded-xl glass-input text-sm"
+            className="w-full pl-10 pr-10 py-3 rounded-xl glass-input text-xs sm:text-sm"
           />
           {searchResults.length > 0 && (
             <div className="absolute z-30 top-full left-0 right-0 mt-2 bg-slate-900/98 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto">
@@ -182,7 +186,7 @@ export const StepLocation: React.FC<StepLocationProps> = ({
                   key={i}
                   type="button"
                   onClick={() => selectResult(item)}
-                  className="w-full text-left px-4 py-2.5 hover:bg-slate-800 border-b border-slate-800/60 last:border-0 transition"
+                  className="w-full text-left px-3.5 sm:px-4 py-2.5 hover:bg-slate-800 border-b border-slate-800/60 last:border-0 transition"
                 >
                   <p className="font-semibold text-white text-xs truncate">{item.address}</p>
                   <p className="text-[11px] text-slate-400 truncate">{item.displayName}</p>
@@ -194,23 +198,24 @@ export const StepLocation: React.FC<StepLocationProps> = ({
       </div>
 
       {errors.location && (
-        <p className="text-xs text-rose-400 flex items-center gap-1">
-          <AlertCircle className="w-3.5 h-3.5" />{errors.location}
-        </p>
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{errors.location}</span>
+        </div>
       )}
 
-      {/* Map */}
-      <div className="relative">
+      {/* Map Container */}
+      <div className="relative rounded-2xl overflow-hidden">
         {loadingGeocode && (
-          <div className="absolute inset-0 z-20 bg-slate-950/60 rounded-2xl flex items-center justify-center text-amber-400 text-xs font-semibold gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" /> Geocodificando…
+          <div className="absolute inset-0 z-20 bg-slate-950/70 backdrop-blur-sm rounded-2xl flex items-center justify-center text-amber-300 text-xs font-semibold gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Obteniendo dirección…
           </div>
         )}
         <DynamicMap lat={lat} lng={lng} onLocationChange={reverseGeocode} />
       </div>
 
       {/* Address fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
         <div className="sm:col-span-2">
           <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
             Dirección Completa <span className="text-amber-400">*</span>
@@ -227,14 +232,14 @@ export const StepLocation: React.FC<StepLocationProps> = ({
 
         <div className="sm:col-span-2">
           <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Referencia <span className="text-slate-500 font-normal">(Opcional)</span>
+            Referencia <span className="text-slate-500 font-normal lowercase">(opcional)</span>
           </label>
           <input
             type="text"
-            placeholder="Ej. Frente al Parque / Al costado del Colegio"
+            placeholder="Ej. Frente al Parque / A 2 cuadras del mercado"
             value={formData.referencia || ''}
             onChange={(e) => updateFormData({ referencia: e.target.value })}
-            className="w-full px-4 py-3 rounded-xl glass-input text-sm"
+            className="w-full px-3.5 py-3 rounded-xl glass-input"
           />
         </div>
 
@@ -282,17 +287,17 @@ export const StepLocation: React.FC<StepLocationProps> = ({
       </div>
 
       {/* Navigation */}
-      <div className="pt-4 flex items-center justify-between gap-3">
+      <div className="pt-3 sm:pt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
         <button
           type="button"
           onClick={onBack}
-          className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition"
+          className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition text-center"
         >
           ← Anterior
         </button>
         <button
           type="submit"
-          className="flex-1 sm:flex-none px-7 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-brand-500/25 transition"
+          className="w-full sm:w-auto sm:ml-auto px-7 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-brand-600 to-amber-500 hover:from-brand-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-brand-500/25 transition text-center"
         >
           Siguiente →
         </button>

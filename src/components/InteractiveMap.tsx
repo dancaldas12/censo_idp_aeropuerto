@@ -63,7 +63,7 @@ export default function InteractiveMap({ lat, lng, onLocationChange }: Interacti
   const position: [number, number] = [lat, lng];
 
   return (
-    <div className="relative w-full h-[320px] rounded-2xl overflow-hidden border border-slate-700/70 shadow-inner">
+    <div className="relative w-full h-[250px] sm:h-[320px] md:h-[360px] rounded-2xl overflow-hidden border border-slate-700/70 shadow-inner">
       <MapContainer
         center={position}
         zoom={15}
@@ -81,8 +81,11 @@ export default function InteractiveMap({ lat, lng, onLocationChange }: Interacti
         />
       </MapContainer>
 
-      <div className="absolute bottom-3 left-3 z-[1000] bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700 text-[11px] text-slate-300 font-mono shadow-md">
-        📍 {lat.toFixed(6)}, {lng.toFixed(6)} (Haz clic o arrastra el pin)
+      <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:right-auto z-[1000] bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 text-[11px] text-slate-300 font-mono shadow-lg flex items-center justify-between sm:justify-start gap-2 max-w-full truncate">
+        <span className="truncate">📍 {lat.toFixed(5)}, {lng.toFixed(5)}</span>
+        <span className="text-[10px] text-amber-400 font-sans hidden xxs:inline sm:inline shrink-0">
+          (Arrastra el marcador)
+        </span>
       </div>
     </div>
   );

@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xxs': '360px',
+        'xs': '480px',
+      },
       colors: {
         brand: {
           50: '#f0f7ff',
