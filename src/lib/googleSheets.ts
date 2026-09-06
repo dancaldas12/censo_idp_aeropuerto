@@ -4,6 +4,60 @@ import path from 'path';
 import crypto from 'crypto';
 
 /**
+ * Sanitizes and reconstructs a valid PKCS#8 PEM private key.
+ * Handles escaped newlines, quotes, Windows CRLF, and single-line environment variables.
+ */
+function sanitizePrivateKey(rawKey?: string): string {
+  if (!rawKey) return '';
+  let key = rawKey.trim();
+
+  // 1. If key is base64 encoded, decode it
+  if (!key.includes('BEGIN') && key.length > 100) {
+    try {
+      const decoded = Buffer.from(key, 'base64').toString('utf8');
+      if (decoded.includes('BEGIN PRIVATE KEY')) {
+        key = decoded.trim();
+      }
+    } catch {}
+  }
+
+  // 2. Remove surrounding quotation marks (single, double, backticks)
+  while (
+    (key.startsWith('"') && key.endsWith('"')) ||
+    (key.startsWith("'") && key.endsWith("'")) ||
+    (key.startsWith('`') && key.endsWith('`'))
+  ) {
+    key = key.slice(1, -1).trim();
+  }
+
+  // 3. Replace escaped newlines \n and carriage returns
+  key = key.replace(/\\n/g, '\n').replace(/\\r/g, '').replace(/\r/g, '');
+
+  // 4. Clean and format PEM structure
+  const beginMarker = '-----BEGIN PRIVATE KEY-----';
+  const endMarker = '-----END PRIVATE KEY-----';
+
+  const beginIdx = key.indexOf(beginMarker);
+  const endIdx = key.indexOf(endMarker);
+
+  if (beginIdx !== -1 && endIdx !== -1) {
+    const header = beginMarker;
+    const footer = endMarker;
+    const body = key
+      .substring(beginIdx + beginMarker.length, endIdx)
+      .replace(/\s+/g, ''); // Remove whitespace/newlines within the base64 body
+
+    // Format body into standard 64-character lines
+    const formattedBody = body.match(/.{1,64}/g)?.join('\n') || body;
+    key = `${header}\n${formattedBody}\n${footer}\n`;
+  } else {
+    key = key.trim() + '\n';
+  }
+
+  return key;
+}
+
+/**
  * Initializes and returns the authenticated Google Sheets API client.
  */
 function getSheetsClient() {
@@ -12,12 +66,12 @@ function getSheetsClient() {
     ? envPath
     : path.join(process.cwd(), envPath);
 
+  // 1. Check if local credentials file exists
   if (fs.existsSync(resolvedPath)) {
     try {
       const fileContent = fs.readFileSync(resolvedPath, 'utf8');
       const parsed = JSON.parse(fileContent);
-      // Ensure private_key has actual newlines, not escaped literal '\n'
-      const privateKey = (parsed.private_key || '').replace(/\\n/g, '\n');
+      const privateKey = sanitizePrivateKey(parsed.private_key);
 
       const auth = new google.auth.GoogleAuth({
         credentials: {
@@ -28,17 +82,26 @@ function getSheetsClient() {
       });
       return google.sheets({ version: 'v4', auth });
     } catch (err: any) {
-      console.warn('Error al leer credentials.json:', err.message);
+      console.warn('Advertencia al leer credentials.json:', err.message);
     }
   }
 
-  // Fallback to GOOGLE_SERVICE_ACCOUNT_JSON or individual env vars
-  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || process.env.GCP_SERVICE_ACCOUNT_JSON;
+  // 2. Check GOOGLE_SERVICE_ACCOUNT_JSON (for Vercel/Docker single-variable setup)
+  let serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || process.env.GCP_SERVICE_ACCOUNT_JSON;
   if (serviceAccountJson) {
     try {
-      const parsed = typeof serviceAccountJson === 'string' ? JSON.parse(serviceAccountJson) : serviceAccountJson;
-      const privateKey = (parsed.private_key || '').replace(/\\n/g, '\n');
-      
+      let raw = serviceAccountJson.trim();
+      while ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+        raw = raw.slice(1, -1).trim();
+      }
+      if (!raw.startsWith('{')) {
+        try {
+          raw = Buffer.from(raw, 'base64').toString('utf8');
+        } catch {}
+      }
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      const privateKey = sanitizePrivateKey(parsed.private_key);
+
       const auth = new google.auth.GoogleAuth({
         credentials: {
           client_email: parsed.client_email,
@@ -48,18 +111,19 @@ function getSheetsClient() {
       });
       return google.sheets({ version: 'v4', auth });
     } catch (err: any) {
-      console.warn('Error parsing GOOGLE_SERVICE_ACCOUNT_JSON:', err.message);
+      console.warn('Error parseando GOOGLE_SERVICE_ACCOUNT_JSON:', err.message);
     }
   }
 
+  // 3. Check individual env vars (GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY)
   const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || process.env.GOOGLE_CLIENT_EMAIL;
-  let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+  const rawPrivateKey = process.env.GOOGLE_PRIVATE_KEY;
 
-  if (clientEmail && privateKey) {
-    privateKey = privateKey.replace(/\\n/g, '\n');
+  if (clientEmail && rawPrivateKey) {
+    const privateKey = sanitizePrivateKey(rawPrivateKey);
     const auth = new google.auth.GoogleAuth({
       credentials: {
-        client_email: clientEmail,
+        client_email: clientEmail.trim(),
         private_key: privateKey,
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -68,7 +132,7 @@ function getSheetsClient() {
   }
 
   throw new Error(
-    'Faltan las credenciales de Google Service Account en credentials.json o .env.local'
+    'Faltan las credenciales de Google Service Account. Configura GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY en las variables de entorno o coloca credentials.json en la raíz.'
   );
 }
 
