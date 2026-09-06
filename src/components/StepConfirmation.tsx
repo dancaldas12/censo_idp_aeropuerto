@@ -165,8 +165,8 @@ export const StepConfirmation: React.FC<StepConfirmationProps> = ({
             className="mt-0.5 w-5 h-5 rounded border-slate-700 bg-slate-800 text-brand-500 focus:ring-brand-400 focus:ring-offset-slate-900 shrink-0 cursor-pointer"
           />
           <span className="text-xs sm:text-xs text-slate-300 leading-relaxed flex-1">
-            Acepto el uso de mis datos exclusivamente para fines pastorales y la planificación de células de{' '}
-            <strong className="text-white">IDP Aeropuerto</strong>.{' '}
+            Acepto el uso de mis datos exclusivamente para fines pastorales y la planificación de células de la{' '}
+            <strong className="text-white">Iglesia de Dios de la Profecía Aeropuerto</strong>.{' '}
             <button
               type="button"
               onClick={(e) => {

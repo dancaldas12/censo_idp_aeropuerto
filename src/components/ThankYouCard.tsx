@@ -36,7 +36,7 @@ export const ThankYouCard: React.FC<ThankYouCardProps> = ({ data, onReset }) => 
         </h2>
 
         <p className="text-slate-300 text-xs sm:text-sm md:text-base max-w-md mx-auto leading-relaxed">
-          Tu registro en el censo geográfico de la <strong className="text-white">Iglesia IDP Aeropuerto</strong> ha sido
+          Tu registro en el censo geográfico de la <strong className="text-white">Iglesia de Dios de la Profecía Aeropuerto</strong> ha sido
           completado exitosamente. Esta información nos permitirá organizar y aperturar células pastorales
           más cercanas a tu hogar.
         </p>

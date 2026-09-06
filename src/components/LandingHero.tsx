@@ -22,7 +22,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onStart }) => {
           <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white p-1.5 shadow-xl shadow-brand-500/20 border border-slate-700/80 shrink-0 flex items-center justify-center">
             <img
               src="/logo.jpg"
-              alt="Logo Iglesia IDP Aeropuerto"
+              alt="Logo Iglesia de Dios de la Profecía Aeropuerto"
               className="w-full h-full object-contain rounded-xl"
             />
           </div>
@@ -32,7 +32,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onStart }) => {
               <span>Censo Geográfico Oficial 2026</span>
             </div>
             <span className="block text-[11px] text-slate-400 mt-1 font-medium">
-              Iglesia de Dios del Perú — IDP Aeropuerto
+              Iglesia de Dios de la Profecía Aeropuerto
             </span>
           </div>
         </div>
@@ -46,7 +46,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onStart }) => {
 
         <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8 max-w-2xl">
           Queremos conocer dónde viven nuestros miembros y creyentes para planificar y aperturar nuevas{' '}
-          <strong className="text-white font-semibold">células de crecimiento pastoral</strong> más cercanas a tu hogar.
+          <strong className="text-white font-semibold">células</strong> más cercanas a tu hogar.
         </p>
 
         {/* Feature cards */}
@@ -76,11 +76,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ onStart }) => {
               className="flex sm:flex-col md:flex-row items-center sm:items-start md:items-center gap-3 p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 transition hover:border-slate-700/80"
             >
               <div
-                className={`p-2.5 rounded-xl shrink-0 ${
-                  color === 'brand'   ? 'bg-brand-500/20 text-brand-400'   :
-                  color === 'amber'   ? 'bg-amber-500/20 text-amber-400'   :
-                  'bg-emerald-500/20 text-emerald-400'
-                }`}
+                className={`p-2.5 rounded-xl shrink-0 ${color === 'brand' ? 'bg-brand-500/20 text-brand-400' :
+                  color === 'amber' ? 'bg-amber-500/20 text-amber-400' :
+                    'bg-emerald-500/20 text-emerald-400'
+                  }`}
               >
                 <Icon className="w-5 h-5" />
               </div>

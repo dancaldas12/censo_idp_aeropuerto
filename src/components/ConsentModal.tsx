@@ -46,13 +46,13 @@ export const ConsentModal: React.FC<ConsentModalProps> = ({ isOpen, onClose }) =
           </div>
           <div>
             <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">Consentimiento Informativo</h3>
-            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Tratamiento de Datos Pastorales - IDP Aeropuerto</p>
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Tratamiento de Datos Pastorales - Iglesia de Dios de la Profecía Aeropuerto</p>
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 space-y-3.5 text-xs sm:text-sm text-slate-300 leading-relaxed custom-scrollbar">
           <p>
-            Al completar este formulario y presionar enviar, declaras haber sido informado(a) y autorizas de forma voluntaria a la <strong className="text-white">Iglesia IDP Aeropuerto</strong> a recopilar y procesar la información personal e información geográfica proporcionada.
+            Al completar este formulario y presionar enviar, declaras haber sido informado(a) y autorizas de forma voluntaria a la <strong className="text-white">Iglesia de Dios de la Profecía Aeropuerto</strong> a recopilar y procesar la información personal e información geográfica proporcionada.
           </p>
 
           <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1">

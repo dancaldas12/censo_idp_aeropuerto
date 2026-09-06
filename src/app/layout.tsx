@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Censo Geográfico | Iglesia IDP Aeropuerto',
+  title: 'Censo Geográfico | Iglesia de Dios de la Profecía Aeropuerto',
   description:
-    'Plataforma oficial de censo geográfico para miembros y creyentes de la Iglesia IDP Aeropuerto para la planificación de futuras células pastorales.',
-  keywords: ['IDP Aeropuerto', 'Censo Geográfico', 'Células', 'Iglesia', 'Registro'],
+    'Plataforma oficial de censo geográfico para miembros y creyentes de la Iglesia de Dios de la Profecía Aeropuerto para la planificación de futuras células pastorales.',
+  keywords: ['IDP Aeropuerto', 'Iglesia de Dios de la Profecia', 'Censo Geográfico', 'Células', 'Iglesia', 'Registro'],
 };
 
 export const viewport: Viewport = {
@@ -59,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Footer */}
         <footer className="border-t border-slate-800/60 bg-slate-950/90 py-5 pb-8 sm:pb-5">
           <div className="max-w-3xl mx-auto px-4 text-center text-xs text-slate-500 space-y-1">
-            <p>© {new Date().getFullYear()} Iglesia IDP Aeropuerto — Todos los derechos reservados.</p>
+            <p>© {new Date().getFullYear()} Iglesia de Dios de la Profecía Aeropuerto — Todos los derechos reservados.</p>
             <p className="text-[11px] text-slate-600">Datos protegidos exclusivamente para fines pastorales.</p>
           </div>
         </footer>
